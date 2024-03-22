@@ -1,0 +1,188 @@
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blind Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background:  radial-gradient(780px at 37.8% 100.3%, rgb(19, 55, 115) 2.2%, rgb(32, 7, 80) 20.2%, rgb(27, 88, 111) 58.6%, rgb(115, 88, 44) 75%, rgb(99, 19, 90) 89.6%, rgb(12, 51, 76) 96.1%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        a{
+            color: black;
+            text-decoration: none;
+            font-size: 1.3rem;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Text shadow for contrast */
+        }
+
+        #loginForm {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            animation: neonBorder 1.5s infinite alternate;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        button {
+            display: block;
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        button:focus {
+            outline: none;
+            border-color: #66afe9;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        @keyframes neonBorder {
+            from {
+                border-color: #ff0000;
+            }
+            to {
+                border-color: #ff00ff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loginForm">
+        <h1>Blind Assistant Web App</h1> <!-- Updated heading -->
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" placeholder="Speak your username">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" placeholder="Speak your password">
+        <button onclick="startLogin()"><a href="page1.html">Login</a></button>
+        <a href="https://forms.gle/YbqrKrMXU8rHFLrR8">Sign up</a>
+        
+    </div>
+
+    <script>
+        // Your JavaScript code here
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+
+        // Initialize speech recognition and synthesis
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        const synth = window.speechSynthesis;
+
+        // Event listener for login button
+        function startLogin() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            if (username && password) {
+                speak(`Logging in as ${username}. Confirm to proceed.`);
+                askConfirmation();
+            } else {
+                speak("Please speak both username and password.");
+            }
+        }
+
+        // Ask for confirmation to proceed with login
+        function askConfirmation() {
+            speak("Say 'yes' to proceed or 'no' to exit.");
+            recognition.start();
+            recognition.onresult = (event) => {
+                const speechResult = event.results[0][0].transcript.trim().toLowerCase();
+                if (speechResult === 'yes') {
+                    login();
+                } else if (speechResult === 'no') {
+                    speak("Exiting.");
+                } else {
+                    speak("Invalid response. Say 'yes' to proceed or 'no' to exit.");
+                    askConfirmation();
+                }
+            };
+        }
+
+        // Perform login logic (simulated)
+        function login() {
+            speak("Successfully logged in.");
+            // Perform actual login logic here (e.g., send credentials to server)
+        }
+
+        // Text-to-speech function
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            synth.speak(utterance);
+        }
+
+        // Event listener for username input
+        usernameInput.addEventListener('focus', () => {
+            speak("Please speak your username.");
+            startSpeechRecognition(usernameInput);
+        });
+
+        // Event listener for password input
+        passwordInput.addEventListener('focus', () => {
+            speak("Please speak your password.");
+            startSpeechRecognition(passwordInput);
+        });
+
+        // Start speech recognition for an input element
+        function startSpeechRecognition(inputElement) {
+            recognition.start();
+            recognition.onresult = (event) => {
+                const speechResult = event.results[0][0].transcript;
+                inputElement.value = speechResult;
+                recognition.stop();
+                if (inputElement === usernameInput) {
+                    speak("Please speak your password.");
+                    startSpeechRecognition(passwordInput);
+                } else {
+                    speak("Say 'login' to proceed.");
+                    startLogin();
+                }
+            };
+            recognition.onerror = (event) => {
+                speak("Error in speech recognition. Please try again.");
+                recognition.stop();
+            };
+        }
+        // ...
+    </script>
+</body>
+</html>
